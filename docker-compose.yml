@@ -1,0 +1,33 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo:6
+    container_name: pollik_mongo_db
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo-js:ro
+      - ./mongo/data:/data/db
+
+  api:
+    build: ./api
+    container_name: pollik_api
+    restart: unless-stopped
+    environment:
+      - MONGO_URI=mongodb://mongodb/
+    ports:
+      - 9001:80
+    depends_on:
+      - mongodb
+
+  app:
+    build: ./app
+    container_name: pollik_app
+    restart: unless-stopped
+    environment:
+      - VITE_API_URI=http://localhost:9001/
+    ports:
+      - 9000:80
+    depends_on: 
+      - api
